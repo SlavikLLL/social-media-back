@@ -7,6 +7,7 @@ import connectDB from './config/connDB.js';
 import PostRoute from './Routes/PostRoute.js'
 import cors from 'cors'
 import corsOptions from './config/corsOptions.js'
+import UploadRoute from './Routes/UploadRoute.js'
 dotenv.config()
 const PORT = 3500 ;
 const app  = express();
@@ -22,7 +23,8 @@ app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 app.use('/auth',AuthRoute);
 app.use('/user',UserRoute);
-app.use('/post',PostRoute);
+app.use('/posts',PostRoute);
+app.use('/upload',UploadRoute)
 mongoose.connection.once('open',()=>{
     console.log('db connectd');
     app.listen(PORT,()=>console.log(`server running on ${PORT}`));

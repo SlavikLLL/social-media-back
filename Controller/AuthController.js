@@ -1,5 +1,6 @@
 import UserModel from "../Model/UserModel.js";
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 export const registerUser = async (req,res)=>{
    const {username,password,firstname,lastname} = req.body;
@@ -12,8 +13,12 @@ export const registerUser = async (req,res)=>{
         if(duplicate){
             res.status(400).json({message:'user exist'})
         }
-        await newUser.save()
-        res.status(200).json(newUser)
+       const user = await newUser.save();
+        const token = jwt.sign({
+            username:user.username,
+            id:user._id
+        },process.env.JWT_KEY,{expiresIn:'1h'})
+        res.status(200).json({user,token})
         
     } catch (error) {
         res.status(500).json({message:error.message})
@@ -28,7 +33,15 @@ export const logInUser = async(req,res) =>{
         if(user){
             const validity = await bcrypt.compare(password,user.password);
 
-            validity? res.status(200).json(user) : res.status(400).json("Wrong password")
+            if(!validity){
+                res.status(400).json('wrong password')
+            }else{
+                const token = jwt.sign({
+                    username:user.username,
+                    id:user._id
+                },process.env.JWT_KEY,{expiresIn:'1h'})
+                res.status(200).json({user,token})
+            }
         }else {
             res.status(400).json('User dont exist')
         }
